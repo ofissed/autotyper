@@ -1,0 +1,62 @@
+name: Build iOS Tweak
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Install Theos
+      run: |
+        echo "📦 Установка Theos..."
+        sudo git clone --recursive https://github.com/theos/theos.git /opt/theos
+        echo "THEOS=/opt/theos" >> $GITHUB_ENV
+        echo "/opt/theos/bin" >> $GITHUB_PATH
+    
+    - name: Install dependencies
+      run: |
+        echo "📦 Установка зависимостей..."
+        brew install ldid
+        
+    - name: Download iOS SDK
+      run: |
+        echo "📦 Загрузка iOS SDK..."
+        curl -LO https://github.com/theos/sdks/archive/master.zip
+        unzip -q master.zip
+        sudo mv sdks-master/*.sdk /opt/theos/sdks/
+        rm -rf master.zip sdks-master
+        ls -la /opt/theos/sdks/
+    
+    - name: Build tweak
+      working-directory: AutoTyperTweak
+      run: |
+        echo "🔨 Сборка твика..."
+        export THEOS=/opt/theos
+        make clean
+        make package
+        
+        echo "✅ Сборка завершена!"
+        ls -lh packages/
+    
+    - name: Upload DEB package
+      uses: actions/upload-artifact@v3
+      with:
+        name: AutoTyper-DEB
+        path: AutoTyperTweak/packages/*.deb
+    
+    - name: Create Release (on tag)
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: softprops/action-gh-release@v1
+      with:
+        files: AutoTyperTweak/packages/*.deb
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

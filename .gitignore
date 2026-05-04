@@ -1,0 +1,46 @@
+# Xcode
+*.xcodeproj/*
+!*.xcodeproj/project.pbxproj
+!*.xcodeproj/xcshareddata/
+!*.xcworkspace/contents.xcworkspacedata
+*.xcworkspace/*
+!*.xcworkspace/xcshareddata/
+
+# Build
+build/
+DerivedData/
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# CocoaPods
+Pods/
+*.xcworkspace
+
+# Carthage
+Carthage/Build/
+
+# Swift Package Manager
+.swiftpm/
+*.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/
+
+# User settings
+xcuserdata/
+*.xcuserstate
+
+# Provisioning
+*.mobileprovision
+*.cer
+*.p12
+*.certSigningRequest
+
+# Theos
+AutoTyperTweak/.theos/
+AutoTyperTweak/obj/
+AutoTyperTweak/packages/
+AutoTyperTweak/*.deb
+
+# Other
+.DS_Store
+*.swp
+*~.nib
