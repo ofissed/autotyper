@@ -20,13 +20,6 @@
 - (void)at_showAutoTyperMenu;
 @end
 
-@interface UIScene : NSObject
-@end
-
-@interface UIWindowScene : UIScene
-@property (nonatomic, readonly) NSArray<UIWindow *> *windows;
-@end
-
 @interface UIKeyboardLayoutStar : UIView
 @end
 
