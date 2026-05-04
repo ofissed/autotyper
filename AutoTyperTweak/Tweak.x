@@ -1,10 +1,10 @@
 #import <UIKit/UIKit.h>
+#import <AudioToolbox/AudioToolbox.h>
 #import "ATConfigViewController.h"
 #import "ATTypingManager.h"
 
 // Интерфейс для UIKeyboardLayoutStar (приватный API)
 @interface UIKeyboardLayoutStar : UIView
-- (UIView *)viewForKey:(NSString *)key;
 @end
 
 @interface UIKBTree : NSObject
@@ -109,40 +109,27 @@ static UIView *highlightView = nil;
 
 %new
 - (void)at_highlightKey:(NSString *)character {
-    // Находим view для клавиши
-    UIView *keyView = [self viewForKey:character];
+    // Простая подсветка без поиска конкретной клавиши
+    // Создаем визуальный эффект в центре клавиатуры
     
-    if (!keyView) {
-        // Пробуем найти по другим вариантам
-        keyView = [self viewForKey:[character uppercaseString]];
-    }
+    UIView *flashView = [[UIView alloc] initWithFrame:CGRectMake(
+        self.bounds.size.width / 2 - 20,
+        self.bounds.size.height / 2 - 20,
+        40,
+        40
+    )];
+    flashView.backgroundColor = [[UIColor systemBlueColor] colorWithAlphaComponent:0.5];
+    flashView.layer.cornerRadius = 20;
+    flashView.userInteractionEnabled = NO;
+    [self addSubview:flashView];
     
-    if (keyView) {
-        // Создаем эффект подсветки
-        if (highlightView) {
-            [highlightView removeFromSuperview];
-        }
-        
-        highlightView = [[UIView alloc] initWithFrame:keyView.bounds];
-        highlightView.backgroundColor = [[UIColor systemBlueColor] colorWithAlphaComponent:0.3];
-        highlightView.layer.cornerRadius = 5;
-        highlightView.userInteractionEnabled = NO;
-        [keyView addSubview:highlightView];
-        
-        // Анимация подсветки
-        [UIView animateWithDuration:0.1 animations:^{
-            highlightView.alpha = 1.0;
-            highlightView.transform = CGAffineTransformMakeScale(0.95, 0.95);
-        } completion:^(BOOL finished) {
-            [UIView animateWithDuration:0.15 delay:0.05 options:0 animations:^{
-                highlightView.alpha = 0.0;
-                highlightView.transform = CGAffineTransformIdentity;
-            } completion:^(BOOL finished) {
-                [highlightView removeFromSuperview];
-                highlightView = nil;
-            }];
-        }];
-    }
+    // Анимация
+    [UIView animateWithDuration:0.2 animations:^{
+        flashView.alpha = 0.0;
+        flashView.transform = CGAffineTransformMakeScale(2.0, 2.0);
+    } completion:^(BOOL finished) {
+        [flashView removeFromSuperview];
+    }];
 }
 
 %end
