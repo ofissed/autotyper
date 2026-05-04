@@ -20,6 +20,13 @@
 - (void)at_showAutoTyperMenu;
 @end
 
+@interface UIScene : NSObject
+@end
+
+@interface UIWindowScene : UIScene
+@property (nonatomic, readonly) NSArray<UIWindow *> *windows;
+@end
+
 @interface UIKeyboardLayoutStar : UIView
 @end
 
@@ -74,17 +81,26 @@ static ATTypingManager *typingManager = nil;
 
 %new
 - (void)at_showAutoTyperMenu {
-    // Получаем активное окно правильным способом для iOS 13+
+    // Получаем активное окно для iOS 13+
     UIWindow *keyWindow = nil;
-    for (UIWindow *window in [UIApplication sharedApplication].windows) {
-        if (window.isKeyWindow) {
-            keyWindow = window;
-            break;
+    
+    NSSet *scenes = [UIApplication sharedApplication].connectedScenes;
+    for (UIScene *scene in scenes) {
+        if ([scene isKindOfClass:[UIWindowScene class]]) {
+            UIWindowScene *windowScene = (UIWindowScene *)scene;
+            for (UIWindow *window in windowScene.windows) {
+                if (window.isKeyWindow) {
+                    keyWindow = window;
+                    break;
+                }
+            }
+            if (keyWindow) break;
         }
     }
     
     if (!keyWindow) {
-        keyWindow = [UIApplication sharedApplication].windows.firstObject;
+        // Fallback для старых версий
+        keyWindow = [UIApplication sharedApplication].delegate.window;
     }
     
     UIViewController *rootVC = keyWindow.rootViewController;
@@ -121,10 +137,10 @@ static ATTypingManager *typingManager = nil;
         typingManager = [ATTypingManager sharedManager];
         
         // Callback для подсветки клавиш
-        __weak UIKeyboardLayoutStar *weakSelf = self;
+        UIKeyboardLayoutStar *strongSelf = self;
         typingManager.onCharacterTyped = ^(NSString *character) {
             dispatch_async(dispatch_get_main_queue(), ^{
-                [weakSelf performSelector:@selector(at_highlightKey:) withObject:character];
+                [strongSelf performSelector:@selector(at_highlightKey:) withObject:character];
             });
         };
     }
