@@ -8,7 +8,6 @@ TWEAK_NAME = AutoTyper
 AutoTyper_FILES = Tweak.x ATConfigViewController.m ATTypingManager.m
 AutoTyper_CFLAGS = -fobjc-arc
 AutoTyper_FRAMEWORKS = UIKit CoreGraphics QuartzCore AudioToolbox
-AutoTyper_PRIVATE_FRAMEWORKS = UIKitCore
 
 include $(THEOS_MAKE_PATH)/tweak.mk
 
