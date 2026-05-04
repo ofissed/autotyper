@@ -13,7 +13,7 @@ jobs:
     
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     
     - name: Install Theos
       run: |
@@ -48,7 +48,7 @@ jobs:
         ls -lh packages/
     
     - name: Upload DEB package
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: AutoTyper-DEB
         path: AutoTyperTweak/packages/*.deb
