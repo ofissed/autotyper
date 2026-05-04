@@ -3,13 +3,17 @@
 #import "ATConfigViewController.h"
 #import "ATTypingManager.h"
 
-// Интерфейс для UIKeyboardLayoutStar (приватный API)
-@interface UIKeyboardLayoutStar : UIView
-@end
-
+// Интерфейсы для приватных API
 @interface UIKBTree : NSObject
 @property (nonatomic, copy) NSString *representedString;
 @property (nonatomic, copy) NSString *displayString;
+@end
+
+@interface UIKBKeyView : UIView
+- (UIKBTree *)key;
+@end
+
+@interface UIKeyboardLayoutStar : UIView
 @end
 
 @interface UIKeyboardImpl : UIView
@@ -19,7 +23,6 @@
 @end
 
 static ATTypingManager *typingManager = nil;
-static UIView *highlightView = nil;
 
 // Хук для обработки долгого нажатия на кнопку "2"
 %hook UIKBKeyView
@@ -45,11 +48,9 @@ static UIView *highlightView = nil;
         // Проверяем, что это кнопка "2"
         NSString *keyText = nil;
         
-        if ([self respondsToSelector:@selector(key)]) {
-            UIKBTree *key = [self valueForKey:@"key"];
-            if (key && [key respondsToSelector:@selector(representedString)]) {
-                keyText = key.representedString;
-            }
+        UIKBTree *key = [self key];
+        if (key && key.representedString) {
+            keyText = key.representedString;
         }
         
         if ([keyText isEqualToString:@"2"]) {
@@ -64,7 +65,20 @@ static UIView *highlightView = nil;
 
 %new
 - (void)at_showAutoTyperMenu {
-    UIViewController *rootVC = [UIApplication sharedApplication].keyWindow.rootViewController;
+    // Получаем активное окно правильным способом для iOS 13+
+    UIWindow *keyWindow = nil;
+    for (UIWindow *window in [UIApplication sharedApplication].windows) {
+        if (window.isKeyWindow) {
+            keyWindow = window;
+            break;
+        }
+    }
+    
+    if (!keyWindow) {
+        keyWindow = [UIApplication sharedApplication].windows.firstObject;
+    }
+    
+    UIViewController *rootVC = keyWindow.rootViewController;
     
     // Находим topmost view controller
     while (rootVC.presentedViewController) {
@@ -101,7 +115,7 @@ static UIView *highlightView = nil;
         __weak UIKeyboardLayoutStar *weakSelf = self;
         typingManager.onCharacterTyped = ^(NSString *character) {
             dispatch_async(dispatch_get_main_queue(), ^{
-                [weakSelf at_highlightKey:character];
+                [weakSelf performSelector:@selector(at_highlightKey:) withObject:character];
             });
         };
     }
