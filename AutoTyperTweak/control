@@ -1,7 +1,7 @@
 Package: com.yourname.autotyper
 Name: AutoTyper
 Version: 1.0.0
-Architecture: iphoneos-arm
+Architecture: iphoneos-arm64
 Description: Автоматический ввод текста с настраиваемой скоростью. Зажмите кнопку "2" на клавиатуре для доступа к меню.
 Maintainer: YourName
 Author: YourName
