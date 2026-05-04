@@ -13,7 +13,18 @@
 - (UIKBTree *)key;
 @end
 
+// Категория для объявления новых методов
+@interface UIKBKeyView (AutoTyper)
+- (void)at_handleLongPress:(UILongPressGestureRecognizer *)gesture;
+- (void)at_showAutoTyperMenu;
+@end
+
 @interface UIKeyboardLayoutStar : UIView
+@end
+
+// Категория для подсветки
+@interface UIKeyboardLayoutStar (AutoTyper)
+- (void)at_highlightKey:(NSString *)character;
 @end
 
 @interface UIKeyboardImpl : UIView
@@ -31,12 +42,16 @@ static ATTypingManager *typingManager = nil;
     self = %orig;
     
     if (self) {
-        // Добавляем распознаватель долгого нажатия только для кнопки "2"
-        UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] 
-            initWithTarget:self 
-            action:@selector(at_handleLongPress:)];
-        longPress.minimumPressDuration = 0.5;
-        [self addGestureRecognizer:longPress];
+        // Проверяем, что это кнопка "2" ДО добавления gesture recognizer
+        UIKBTree *key = [self key];
+        if (key && [key.representedString isEqualToString:@"2"]) {
+            // Добавляем распознаватель только для кнопки "2"
+            UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] 
+                initWithTarget:self 
+                action:@selector(at_handleLongPress:)];
+            longPress.minimumPressDuration = 0.5;
+            [self addGestureRecognizer:longPress];
+        }
     }
     
     return self;
@@ -45,21 +60,11 @@ static ATTypingManager *typingManager = nil;
 %new
 - (void)at_handleLongPress:(UILongPressGestureRecognizer *)gesture {
     if (gesture.state == UIGestureRecognizerStateBegan) {
-        // Проверяем, что это кнопка "2"
-        NSString *keyText = nil;
+        // Вибрация при открытии меню
+        AudioServicesPlaySystemSound(1519);
         
-        UIKBTree *key = [self key];
-        if (key && key.representedString) {
-            keyText = key.representedString;
-        }
-        
-        if ([keyText isEqualToString:@"2"]) {
-            // Вибрация при открытии меню
-            AudioServicesPlaySystemSound(1519);
-            
-            // Показываем меню автотайпера
-            [self at_showAutoTyperMenu];
-        }
+        // Показываем меню автотайпера
+        [self at_showAutoTyperMenu];
     }
 }
 
