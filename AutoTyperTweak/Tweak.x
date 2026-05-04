@@ -11,6 +11,7 @@
 
 @interface UIKBKeyView : UIView
 - (UIKBTree *)key;
+- (void)setKey:(UIKBTree *)key;
 @end
 
 // Категория для объявления новых методов
@@ -38,34 +39,37 @@ static ATTypingManager *typingManager = nil;
 // Хук для обработки долгого нажатия на кнопку "2"
 %hook UIKBKeyView
 
-- (instancetype)initWithFrame:(CGRect)frame {
-    self = %orig;
+- (void)setKey:(UIKBTree *)key {
+    %orig;
     
-    if (self) {
-        // Проверяем, что это кнопка "2" ДО добавления gesture recognizer
-        UIKBTree *key = [self key];
-        if (key && [key.representedString isEqualToString:@"2"]) {
-            // Добавляем распознаватель только для кнопки "2"
-            UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] 
-                initWithTarget:self 
-                action:@selector(at_handleLongPress:)];
-            longPress.minimumPressDuration = 0.5;
-            [self addGestureRecognizer:longPress];
-        }
+    if (![key.representedString isEqualToString:@"2"]) return;
+    
+    // чтобы не добавлялся 100 раз
+    for (UIGestureRecognizer *g in self.gestureRecognizers) {
+        if ([g isKindOfClass:[UILongPressGestureRecognizer class]]) return;
     }
     
-    return self;
+    UILongPressGestureRecognizer *longPress =
+    [[UILongPressGestureRecognizer alloc]
+        initWithTarget:self
+        action:@selector(at_handleLongPress:)];
+    
+    longPress.minimumPressDuration = 0.5;
+    
+    [self addGestureRecognizer:longPress];
+    
+    NSLog(@"🔥 gesture added to key 2");
 }
 
 %new
 - (void)at_handleLongPress:(UILongPressGestureRecognizer *)gesture {
-    if (gesture.state == UIGestureRecognizerStateBegan) {
-        // Вибрация при открытии меню
-        AudioServicesPlaySystemSound(1519);
-        
-        // Показываем меню автотайпера
-        [self at_showAutoTyperMenu];
-    }
+    if (gesture.state != UIGestureRecognizerStateBegan) return;
+    
+    AudioServicesPlaySystemSound(1519);
+    
+    NSLog(@"🔥 LONG PRESS WORKED");
+    
+    [self at_showAutoTyperMenu];
 }
 
 %new
@@ -154,6 +158,7 @@ static ATTypingManager *typingManager = nil;
 %end
 
 %ctor {
-    %init;
+    NSLog(@"🔥 AutoTyper LOADED");
     typingManager = [ATTypingManager sharedManager];
+    %init;
 }
